@@ -1,9 +1,14 @@
-package com.tycoon177.mineabound.utils;
+package com.tycoon177.mineabound.world;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.tycoon177.mineabound.utils.LoadedTextureAtlas;
 
 public enum BlockType {
-	AIR(0, ""), DIRT(1, "grassCenter");
+	AIR(0, "air"),
+	STONE(1,"stone"),
+	GRASS(2,"grass"),
+	DIRT(3, "dirt"), 
+	BEDROCK(7, "bedrock");
 
 	private TextureRegion sprite;
 	private int id;

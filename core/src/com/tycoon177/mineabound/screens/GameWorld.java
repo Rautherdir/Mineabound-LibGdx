@@ -6,6 +6,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -14,40 +15,41 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.ChainShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
-import com.tycoon177.mineabound.Block;
-import com.tycoon177.mineabound.utils.BlockType;
+import com.tycoon177.mineabound.entities.Player;
 import com.tycoon177.mineabound.utils.GameInputProcessor;
+import com.tycoon177.mineabound.world.ChunkHandler;
 
 public class GameWorld implements Screen {
-	private World world;
+	public static World world;
 	private static OrthographicCamera camera;
 	private SpriteBatch renderer;
-	Box2DDebugRenderer dbr = new Box2DDebugRenderer();
-	Block block;
+	private Box2DDebugRenderer dbr = new Box2DDebugRenderer();
+	public static Player player;
 	private Vector2 characterMovement;
-	private final float forceX = 20f;
-	private final float forceY = 5f;
-	private Vector2 previousLoc;
-
+	private final float forceX = 1;
+	private final float forceY = 1;
+	private ChunkHandler chunkHandler;
 	@Override
 	public void show() {
-		previousLoc = new Vector2();
 		characterMovement = new Vector2();
 		renderer = new SpriteBatch();
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, 10, 10);
 		world = new World(new Vector2(0, -9.8f), true);
-		block = new Block(world, BlockType.DIRT, new Vector2(2, 2));
+		player = new Player();
 		BodyDef floor = new BodyDef();
 		floor.position.set(0, 0);
 		floor.type = BodyType.StaticBody;
 		Body b = world.createBody(floor);
+
 		FixtureDef def = new FixtureDef();
 		ChainShape shape = new ChainShape();
 		shape.createChain(new float[] { 0, 0, 10, 0 });
 		def.shape = shape;
+
 		b.createFixture(def);
 		createInputProcessor();
+		chunkHandler = new ChunkHandler();
 	}
 
 	private void createInputProcessor() {
@@ -55,18 +57,20 @@ public class GameWorld implements Screen {
 			@Override
 			public boolean keyDown(int keycode) {
 				switch (keycode) {
-				case Keys.A:
-					characterMovement.x = -forceX;
-					break;
-				case Keys.D:
-					characterMovement.x = forceX;
-					break;
-				case Keys.W:
-					characterMovement.y = forceY;
-					break;
-				case Keys.S:
-					characterMovement.y = -forceY;
-					break;
+					case Keys.A:
+						characterMovement.x = -forceX;
+						player.setDirection(Player.LEFT);
+						break;
+					case Keys.D:
+						characterMovement.x = forceX;
+						player.setDirection(Player.RIGHT);
+						break;
+					case Keys.W:
+						characterMovement.y = forceY;
+						break;
+					case Keys.S:
+						characterMovement.y = -forceY;
+						break;
 				}
 
 				return true;
@@ -75,14 +79,16 @@ public class GameWorld implements Screen {
 			@Override
 			public boolean keyUp(int keycode) {
 				switch (keycode) {
-				case Keys.A:
-				case Keys.D:
-					characterMovement.x = 0;
-					break;
-				case Keys.W:
-				case Keys.S:
-					characterMovement.y = 0;
-					break;
+					case Keys.A:
+					case Keys.D:
+						characterMovement.x = 0;
+						player.getBody().setLinearVelocity(characterMovement.x, player.getBody().getLinearVelocity().y);
+						break;
+					case Keys.W:
+					case Keys.S:
+						characterMovement.y = 0;
+						player.getBody().setLinearVelocity(player.getBody().getLinearVelocity().x, characterMovement.y);
+						break;
 
 				}
 				return true;
@@ -92,30 +98,36 @@ public class GameWorld implements Screen {
 
 	@Override
 	public void render(float delta) {
-		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glClearColor(.2f, .2f, .75f, 1);
 		Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		camera.update();
 		world.step(1 / 60f, 8, 3);
-		System.out.println((previousLoc.dst(block.getBody().getPosition()) / delta));
 		renderer.setProjectionMatrix(camera.combined);
 		renderer.begin();
-		block.draw(renderer);
+		chunkHandler.render(renderer);
+		player.draw(renderer, player.getDirection());
 		renderer.end();
 		dbr.render(world, camera.combined);
 		update(delta);
 	}
 
 	private void update(float delta) {
-		previousLoc.set(block.getBody().getPosition());
-		// block.getBody().applyForceToCenter(characterMovement, true);
-		block.getBody().setLinearVelocity(characterMovement.x, characterMovement.y == 0 ? block.getBody().getLinearVelocity().y : characterMovement.y);
-		// block.getBody().applyForceToCenter(0, characterMovement.y, true);
-		camera.position.set(block.getBody().getPosition().x, block.getBody().getPosition().y, 0);
+		player.getBody().applyLinearImpulse(characterMovement, player.getBody().getPosition(), true);
+		camera.position.set(player.getBody().getPosition().x, player.getBody().getPosition().y, 0);
+		updateTitleWithInfo();
+		chunkHandler.update();
+	}
+
+	private void updateTitleWithInfo() {
+		Vector2 pos = player.getBody().getPosition();
+		pos.x = MathUtils.round(pos.x * 100) / 100f;
+		pos.y = MathUtils.round(pos.y * 100) / 100f;
+
+		Gdx.graphics.setTitle("X: " + pos.x + " Y: " + pos.y);
 	}
 
 	@Override
 	public void resize(int width, int height) {
-		// TODO Auto-generated method stub
 
 	}
 

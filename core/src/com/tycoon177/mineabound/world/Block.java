@@ -1,4 +1,4 @@
-package com.tycoon177.mineabound;
+package com.tycoon177.mineabound.world;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -9,32 +9,19 @@ import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
-import com.tycoon177.mineabound.utils.BlockType;
 
 public class Block {
 	private Body body;
 	private BlockType type;
 	private float width = 1, height = 1;
 
-	public Block(World world, BlockType type, Vector2 position) {
+	public Block(BlockType type) {
 		this.type = type;
-		BodyDef def = new BodyDef();
-		def.type = BodyType.DynamicBody;
-		def.fixedRotation = true;
-		def.position.set(position);
-		body = world.createBody(def);
-		FixtureDef f = new FixtureDef();
-		f.density = 1;
-		f.friction = 1f;
-		PolygonShape shape = new PolygonShape();
-		shape.setAsBox(width / 2f, height / 2f);
-		f.shape = shape;
-		
-		body.createFixture(f);
-
 	}
 
 	public void draw(SpriteBatch renderer) {
+		if (body == null) // Hasn't been added to the world yet.
+			return;
 		TextureRegion sprite = getSprite();
 		if (sprite == null)
 			return;
@@ -47,6 +34,25 @@ public class Block {
 
 	public Body getBody() {
 		return body;
+	}
+
+	public void addToWorld(World world, Vector2 position) {
+		if (body != null)
+			return; // Already been added
+		BodyDef def = new BodyDef();
+		def.type = BodyType.StaticBody;
+		def.fixedRotation = true;
+		def.position.set(position);
+		body = world.createBody(def);
+		FixtureDef f = new FixtureDef();
+		f.density = 1;
+		f.friction = .5f;
+		PolygonShape shape = new PolygonShape();
+		shape.setAsBox(width / 2f, height / 2f);
+		f.shape = shape;
+
+		body.createFixture(f);
+
 	}
 
 }

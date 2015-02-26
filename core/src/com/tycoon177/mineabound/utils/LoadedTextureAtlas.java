@@ -4,6 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 
 public class LoadedTextureAtlas {
-	public static TextureAtlas blockAtlas = new TextureAtlas(Gdx.files.internal("Blocks.pack"));
+	public static TextureAtlas blockAtlas = new TextureAtlas(Gdx.files.internal("textures.pack"));
 	
 }
