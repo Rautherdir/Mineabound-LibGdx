@@ -19,7 +19,7 @@ public class Player extends Entity {
 		BodyDef bDef = new BodyDef();
 		bDef.type = BodyType.DynamicBody;
 		bDef.fixedRotation = true;
-		bDef.position.set(10, 40);
+		bDef.position.set(0, 40);
 		setBody(GameWorld.world.createBody(bDef));
 
 		FixtureDef fDef = new FixtureDef();

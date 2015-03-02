@@ -76,6 +76,10 @@ public class GameWorld implements Screen {
 				return true;
 			}
 
+			private void jump() {
+				player.getBody().applyForceToCenter(0, 200f, true);
+			}
+
 			@Override
 			public boolean keyUp(int keycode) {
 				switch (keycode) {
