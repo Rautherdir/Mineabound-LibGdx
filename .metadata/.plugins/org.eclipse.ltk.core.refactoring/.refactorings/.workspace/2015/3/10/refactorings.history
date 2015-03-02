@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">&#x0A;<refactoring comment="Rename resource &apos;mineabound-core&apos; to &apos;Mineabound-core&apos;" description="Rename resource &apos;mineabound-core&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="/mineabound-core" name="Mineabound-core" stamp="1425266886184" updateReferences="true"/>&#x0A;<refactoring comment="Rename resource &apos;desktop&apos; to &apos;Mineabound-desktop&apos;" description="Rename resource &apos;desktop&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="/desktop" name="Mineabound-desktop" stamp="1425268568928" updateReferences="true"/>
+</session>

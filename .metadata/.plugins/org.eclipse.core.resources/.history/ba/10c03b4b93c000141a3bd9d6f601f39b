@@ -1,0 +1,131 @@
+package com.tycoon177.mineabound.world;
+
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
+import com.tycoon177.mineabound.screens.GameWorld;
+import com.tycoon177.mineabound.utils.PerlinNoiseGenerator;
+import com.tycoon177.mineabound.utils.SimplexNoise;
+
+public class Chunk {
+	private Block[][] block;
+	private int maxHeightFlux = 2;
+
+	public static int WIDTH = 16, HEIGHT = 256;
+	private int id;
+
+	public Chunk(int id) {
+		this.id = id;
+		generateChunk();
+	}
+
+	public void addToWorld() {
+		for (int i = 0; i < WIDTH; i++) {
+			for (int j = 0; j < HEIGHT; j++) {
+				if (block[i][j] != null)
+					block[i][j].addToWorld(GameWorld.world, new Vector2(id * WIDTH + i, j));
+			}
+		}
+	}
+
+	public void render(SpriteBatch renderer) {
+		for (int i = 0; i < WIDTH; i++) {
+			for (int j = 0; j < HEIGHT; j++) {
+				if (block[i][j] != null)
+					block[i][j].draw(renderer);
+			}
+		}
+	}
+
+	public int getID() {
+		return id;
+	}
+
+	public void generateChunk() {
+		PerlinNoiseGenerator noiseMap = new PerlinNoiseGenerator();
+		
+		
+		SimplexNoise.SeedWorld(4); // proven random by a fair dice roll. Guarunteed to be random
+
+		int currentHeight = 30;
+		float[] noise = generateNoise(id);
+
+		block = new Block[WIDTH][HEIGHT];
+
+		int offset = id * 16;
+		
+		for(int i = 0; i < 16; i++) {
+			currentHeight += noiseMap.improvedNoise(offset + i/16, 0, 0) * 10;
+			System.out.println(noiseMap.improvedNoise(offset + i/16, 0, 0));
+			currentHeight = MathUtils.clamp(currentHeight, 0, HEIGHT - 1);
+			block[i][currentHeight] = new Block(BlockType.GRASS);
+			currentHeight = 30;
+		}
+/*
+		if (id > 0)
+			for (int i = 0; i < id; i++) {
+
+				float[] noiseTemp = generateNoise(i);
+				for (float dy : noiseTemp) {
+					currentHeight += noiseMap.improvedNoise(offset - i, 0, 0);
+					//currentHeight += dy;
+					currentHeight = MathUtils.clamp(currentHeight, 0, HEIGHT - 1);
+				}
+			}
+		else
+			if (id < 0)
+				for (int i = 0; i >= id; i--) {
+
+					float[] noiseTemp = generateNoise(i);
+					for (float dy : noiseTemp) {
+						currentHeight += noiseMap.improvedNoise(offset - i, 0, 0);
+						//currentHeight += dy;
+						currentHeight = MathUtils.clamp(currentHeight, 0, HEIGHT - 1);
+					}
+				}*/
+		/*for (int x = 0; x < WIDTH; x++) {
+			// for (int y = 0; y < currentHeight && y < HEIGHT; y++) {
+			//block[x][currentHeight] = new Block(BlockType.GRASS);
+			// }
+			System.out.println("Chunk: " + id);
+			System.out.println("xLoc: " + x + "\nHeight: " + currentHeight);
+
+			currentHeight += noise[x];
+			currentHeight = MathUtils.clamp(currentHeight, 0, HEIGHT - 1);
+		}*/
+		//System.out.println("Chunk ID: " + id);
+		//System.out.print("Noise: ");
+		/*for (float f : noise) {
+			float f1 = f;
+			f1 *= 100;
+			f1 = MathUtils.round(f1);
+			f1 /= 100f;
+			System.out.print(f1 + ", ");
+		}
+		;*/
+		System.out.println();
+
+	}
+
+	private float[] generateNoise(int chunkId) {
+
+		int offset = chunkId * WIDTH;
+		
+		float[] noise = new float[WIDTH];
+		// Frequency = features. Higher = more features
+		float frequency = 0.3f;
+		// Weight = smoothness. Higher frequency = more smoothness
+		float weight = 5;
+
+		for (int passes = 0; passes < 6; passes++) {
+			for (int x = 0; x < WIDTH; x++) {
+				noise[x] += (float) SimplexNoise.noise(offset + x * frequency, 0) * weight;
+				noise[x] = MathUtils.clamp(noise[x], -1.0f, 1.0f);
+			}
+			frequency *= 1.5f;
+			weight *= 0.25f;
+		}
+
+		return noise;
+	}
+}
